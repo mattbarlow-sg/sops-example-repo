@@ -1,0 +1,27 @@
+name: 'terraform'
+description: 'Execute Terraform for a given environment'
+inputs:
+  env:
+    required: true
+    description: 'env to deploy to'
+runs:
+  using: "composite"
+  steps:
+    - id: sops
+      run: wget -O /tmp/sops.deb https://github.com/mozilla/sops/releases/download/v3.6.1/sops_3.6.1_amd64.deb && sudo dpkg -i /tmp/sops.deb
+      shell: bash
+    - id: fmt
+      run: terraform fmt -check
+      shell: bash
+    - id: init
+      run: terraform init
+      shell: bash
+    - id: validate
+      run: terraform validate
+      shell: bash
+    - id: plan
+      run: terraform plan -var env=${{ inputs.env }} -out terraform.plan
+      shell: bash
+    - id: apply
+      run: terraform apply terraform.plan
+      shell: bash
